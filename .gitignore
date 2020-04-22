@@ -1,0 +1,6 @@
+.idea
+application/vendor
+admin/vendor
+.DS_Store
+application/web/content
+
