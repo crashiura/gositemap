@@ -3,11 +3,12 @@ package gositemap
 import "errors"
 
 const (
-	MaxFileSize = 52428800
+	maxFileSize = 52428800
 	maxUrls     = 50000
 )
 
-var ErrorFileValidation = errors.New("error max file size or max elements")
+//ErrorAddEntity error add entity in sitemap
+var ErrorAddEntity = errors.New("error max file size or max elements in file")
 
 var (
 	indexSitemapXMLHeader = []byte(`<?xml version="1.0" encoding="UTF-8"?>

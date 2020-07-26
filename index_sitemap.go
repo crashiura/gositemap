@@ -3,12 +3,13 @@ package gositemap
 import (
 	"bytes"
 	"encoding/xml"
-	"log"
 	"path/filepath"
 )
 
+//IndexSitemapOpt option for sitemap
 type IndexSitemapOpt func(*IndexSitemap)
 
+//IndexSitemap index sitemap entity representation
 type IndexSitemap struct {
 	fileName      string
 	dir           string
@@ -19,12 +20,14 @@ type IndexSitemap struct {
 	compress      bool
 }
 
+//SitemapEntity sitemap item representation
 type SitemapEntity struct {
 	XMLName xml.Name `xml:"sitemap"`
 	Loc     string   `xml:"loc"`
-	LastMod XmlTime  `xml:"lastmod,omitempty"`
+	LastMod XMLTime  `xml:"lastmod,omitempty"`
 }
 
+//NewIndexSitemap creates new index sitemap
 func NewIndexSitemap(opts ...IndexSitemapOpt) *IndexSitemap {
 	s := &IndexSitemap{
 		fileName: "sitemap.xml",
@@ -40,11 +43,11 @@ func NewIndexSitemap(opts ...IndexSitemapOpt) *IndexSitemap {
 	return s
 }
 
+//Add new sitemap entity in index sitemap
 func (s *IndexSitemap) Add(e *SitemapEntity) error {
 	e.Loc = s.host + "/" + s.publicPath + e.Loc
 	b, err := xml.Marshal(e)
 	if err != nil {
-		log.Println("Error marshal url ", err)
 		return err
 	}
 
@@ -54,47 +57,61 @@ func (s *IndexSitemap) Add(e *SitemapEntity) error {
 		return nil
 	}
 
-	return ErrorFileValidation
+	return ErrorAddEntity
 }
 
 func (s *IndexSitemap) validate(content []byte) bool {
-	return len(content)+len(indexSitemapXMLHeader)+len(indexSitemapXMLFooter) < MaxFileSize
+	return len(content)+len(indexSitemapXMLHeader)+len(indexSitemapXMLFooter) < maxFileSize
 }
 
-func (s *IndexSitemap) Build() {
+//Build index sitemap
+func (s *IndexSitemap) Build() error {
 	fullPath := filepath.Join(
 		s.dir,
 		s.fileName,
 	)
-	writeFile(s.dir, fullPath, s.GetXml(), s.compress)
+
+	return writeFile(s.dir, fullPath, s.GetXML(), s.compress)
 }
 
-func (s *IndexSitemap) GetXml() []byte {
+//GetXML return xml output
+func (s *IndexSitemap) GetXML() []byte {
 	c := bytes.Join(bytes.Fields(indexSitemapXMLHeader), []byte(" "))
 	c = append(append(c, s.content...), indexSitemapXMLFooter...)
 	return c
 }
 
+//DirIndexOpt set dir for index sitemap
 func DirIndexOpt(dir string) IndexSitemapOpt {
 	return func(sitemap *IndexSitemap) {
 		sitemap.dir = dir
 	}
 }
 
+//FileNameIndexOpt set filename for index sitemap
 func FileNameIndexOpt(fileName string) IndexSitemapOpt {
 	return func(sitemap *IndexSitemap) {
 		sitemap.fileName = fileName
 	}
 }
 
+//HostIndexOpt set host for index sitemap
 func HostIndexOpt(host string) IndexSitemapOpt {
 	return func(sitemap *IndexSitemap) {
 		sitemap.host = host
 	}
 }
 
+//CompressIndexOpt compress to .gz for sitemap
 func CompressIndexOpt(compress bool) IndexSitemapOpt {
 	return func(sitemap *IndexSitemap) {
 		sitemap.compress = compress
+	}
+}
+
+//PublicPathIndexOpt set public path in sitemap
+func PublicPathIndexOpt(path string) IndexSitemapOpt {
+	return func(sitemap *IndexSitemap) {
+		sitemap.publicPath = path
 	}
 }

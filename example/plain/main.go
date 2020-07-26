@@ -15,7 +15,7 @@ func main() {
 	sm := gositemap.NewSitemap(
 		gositemap.DirOpt("./"),
 		gositemap.FileNameOpt(fmt.Sprintf(sitemapName, 1)),
-		gositemap.CompressOpt(true),
+		gositemap.CompressOpt(false),
 	)
 
 	countSitemapFiles := 1
@@ -23,40 +23,49 @@ func main() {
 	for i := 0; i <= maxPages; i++ {
 		u := &gositemap.URL{
 			Loc:        fmt.Sprintf("product/inventory?page=%d", i),
-			LastMod:    gositemap.XmlTime(time.Now()),
+			LastMod:    gositemap.XMLTime(time.Now()),
 			ChangeFreq: gositemap.Always,
 			Priority:   1,
 		}
 		err := sm.Add(u)
 		if err != nil {
-			if err == gositemap.ErrorFileValidation {
-				sitemapNames = append(sitemapNames, sm.Build())
+			if err == gositemap.ErrorAddEntity {
+				name, err := sm.Build()
+				if err != nil {
+					// handle err
+				}
+				sitemapNames = append(sitemapNames, name)
 				countSitemapFiles++
 				sm = gositemap.NewSitemap(
 					gositemap.DirOpt("./"),
 					gositemap.FileNameOpt(fmt.Sprintf(sitemapName, countSitemapFiles)),
-					gositemap.CompressOpt(true),
+					gositemap.CompressOpt(false),
 				)
 				sm.Add(u)
 				continue
 			}
 			log.Fatal("error", err)
 		}
+
 		if i == maxPages {
-			sitemapNames = append(sitemapNames, sm.Build())
+			name, err := sm.Build()
+			if err != nil {
+				// handle err
+			}
+			sitemapNames = append(sitemapNames, name)
 		}
 	}
 
 	indexSm := gositemap.NewIndexSitemap(
 		gositemap.DirIndexOpt("./"),
 		gositemap.FileNameIndexOpt("index-sitemap.xml"),
-		gositemap.CompressIndexOpt(true),
+		gositemap.CompressIndexOpt(false),
 	)
 
 	for _, v := range sitemapNames {
 		if err := indexSm.Add(&gositemap.SitemapEntity{
 			Loc:     "public" + v,
-			LastMod: gositemap.XmlTime(time.Now()),
+			LastMod: gositemap.XMLTime(time.Now()),
 		}); err != nil {
 			log.Fatal("error generate index sitemap", err)
 		}

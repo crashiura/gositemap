@@ -1,0 +1,48 @@
+# More info on config here: https://github.com/golangci/golangci-lint#config-file
+run:
+  deadline: 10s
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - bin
+    - vendor
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0
+  dupl:
+    threshold: 100
+  goconst:
+    min-len:         2
+    min-occurrences: 2
+
+linters:
+  disable-all: true
+  enable:
+    - golint
+    - govet
+    - errcheck
+    - deadcode
+    - structcheck
+    - varcheck
+    - ineffassign
+    - typecheck
+    - dupl
+    - goconst
+    - gosec
+    # - goimports - your IDE should do this automatically as 'On save' action anyways
+    # - megacheck (staticcheck + gosimple + unused in one linter) - enable before push
+
+issues:
+  exclude-use-default: false
+  exclude:
+    # _ instead of err checks
+#    - G104
+    - should have a package comment, unless it's in another file for this package

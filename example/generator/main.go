@@ -1,17 +1,15 @@
-# Dynamic sitemap generator for Go
+package main
 
-Simple program made in Go to create a sitemap of any website.
+import (
+	"log"
+	"strconv"
+	"time"
 
-### Package installation 
+	"github.com/crashiura/gositemap"
+)
 
-`````
- go get -u -v github.com/crashiura/gositemap 
-  `````
-## Example
-(Use generator):
-
-```go
-g := gositemap.NewGenerator(
+func main() {
+	g := gositemap.NewGenerator(
 		gositemap.IndexSitemapGenOpt("index.xml"),
 		gositemap.DirGenOpt("./web"),
 		gositemap.CompressGenOpt(false),
@@ -51,7 +49,4 @@ g := gositemap.NewGenerator(
 	if err != nil {
 		log.Println(err)
 	}
-```
-## License
-
-This project is licensed under the Apache License, Version 2.0 - see http://www.apache.org/licenses/LICENSE-2.0 for more details
+}

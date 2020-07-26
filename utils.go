@@ -2,40 +2,50 @@ package gositemap
 
 import (
 	"compress/gzip"
-	"log"
+	"fmt"
 	"os"
 )
 
-func writeFile(dir, fullPath string, data []byte, compress bool) {
+func writeFile(dir, fullPath string, data []byte, compress bool) error {
 	if compress {
 		fullPath = fullPath + ".gz"
 	}
 
 	fi, err := os.Stat(dir)
 	if err != nil {
-		_ = os.MkdirAll(dir, 0755)
+		_ = os.MkdirAll(dir, 0750)
 	} else if !fi.IsDir() {
-		log.Fatalf("[F] %s should be a directory", dir)
+		return fmt.Errorf("[F] %s should be a directory", dir)
 	}
 
-	file, _ := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	file, _ := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	fi, err = file.Stat()
+
 	if err != nil {
-		log.Fatalf("[F] %s file not exists", fullPath)
+		return fmt.Errorf("[F] %s file not exists", fullPath)
 	} else if !fi.Mode().IsRegular() {
-		log.Fatalf("[F] %s should be a filename", fullPath)
+		return fmt.Errorf("[F] %s should be a filename", fullPath)
 	}
 
 	if compress {
-		gzipSitemap(file, data)
-	} else {
-		file.Write(data)
-		defer file.Close()
+		return gzipSitemap(file, data)
 	}
+
+	_, err = file.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return file.Close()
 }
 
-func gzipSitemap(file *os.File, data []byte) {
+func gzipSitemap(file *os.File, data []byte) error {
 	gz := gzip.NewWriter(file)
-	defer gz.Close()
-	gz.Write(data)
+
+	_, err := gz.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return gz.Close()
 }
